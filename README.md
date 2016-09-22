@@ -5,6 +5,19 @@ This bot is made for usage on single server. It uses <a href="https://github.com
 - Discord.js
 - winston & winston-daily-rotate-file
 
+## Installation/usage
+
+Running this on Linux.
+
+```
+npm install discord.js
+npm install winston
+npm install winston-daily-rotate-file
+
+screen node basebot.js
+```
+Screen is optional command.
+
 ## Credits
 - Tumeski
 - Häkä
