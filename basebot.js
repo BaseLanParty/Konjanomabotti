@@ -143,4 +143,4 @@ function isAdmin(id) {
 }
 
 
-client.login(require("./conf/config.json").client_id);
+client.login(require("./conf/config.json").bot_id);
