@@ -10,43 +10,41 @@ var komennot = {
   "peli": {
     name: "peli",
     description: "Pingaa kaikkia kanavalla ja pyytää pelaajia.",
-    extendedhelp: "Tätä spämmätään KJEH",
+    extendedhelp: "Tätä spämmätään, KJEH KJEH",
     usage: "<pelin nimi>",
-    process: function(bot, msg, suffix) {
+    process: function(client, msg, suffix) {
       var peli = peli_nimet[suffix];
       if (!peli) {
         peli = suffix;
       }
-      bot.sendMessage(msg.channel, "@everyone, " + msg.sender + " tulukee pellaamaan " + peli);
+      client.sendMessage(msg.channel, "@everyone, " + msg.sender + " tulukee pellaamaan " + peli);
       Logger.log("debug", "Kutsuttiin @everyone pelaamaan " + peli);
     }
   }
 };
 
 var Discord = require("discord.js");
-var bot = new Discord.Client();
+var client = new Discord.Client();
 
-bot.on("ready", function() {
-  Logger.log("info", "Lipas! Sain " + bot.channels.length + " kanavaa");
+client.on("ready", function() {
+  Logger.log("info", "Lipas! Sain " + client.channels.length + " kanavaa");
 });
 
-bot.on("message", msg => {
-
-
-  if (msg.author.id != bot.user.id && (msg.content[0] === KomentoEtuliite)) {
-    if (msg.author.equals(bot.user)) {
+client.on("message", msg => {
+  if (msg.author.id != client.user.id && (msg.content[0] === KomentoEtuliite)) {
+    if (msg.author.equals(client.user)) {
       return;
     }
 
-    Logger.log("info", msg.author.username + " executed <" + msg.content + ">");
+    Logger.log("info", msg.author.username + " ajoi komennon <" + msg.content + ">");
     var cmdTxt = msg.content.split(" ")[0].substring(1).toLowerCase();
-    var suffix = msg.content.substring(cmdTxt.length + 2); //add one for the ! and one for the space
+    var suffix = msg.content.substring(cmdTxt.length + 2);
 
 
     var cmd = komennot[cmdTxt];
-    if (cmdTxt === "help") { // Help is special, as it isn't a real 'command'
-      var msgArray = []; // Build a Messsage array, this makes all the messages send as one.
-      var commandnames = []; // Build a array of names from komennot.
+    if (cmdTxt === "apua") {
+      var msgArray = [];
+      var commandnames = [];
       for (cmd in komennot) {
         var info = KomentoEtuliite + cmd;
         var usage = komennot[cmd].usage;
@@ -68,38 +66,38 @@ bot.on("message", msg => {
         msgArray.push(commandnames.join(", "));
         msgArray.push("");
         msgArray.push("Ainiin, urgaypwned");
-        bot.sendMessage(msg.author, msgArray);
+        client.reply(msg.author, msgArray);
         if (msg.channel.server) {
-          bot.sendMessage(msg.channel, "Juuh, elikkäs " + msg.sender + ", urgaypwned.");
+          client.msg.reply(msg.channel.sendMessage, "Juuh, elikkäs " + msg.sender + ", urgaypwned.");
         }
       }
       if (suffix) {
-        if (komennot[suffix]) { // Look if suffix corresponds to a command
-          var commando = komennot[suffix]; // Make a varialbe for easier calls
-          msgArray = []; // Build another message array
-          msgArray.push("**Komento:** `" + commando.name + "`"); // Push the name of the command to the array
-          msgArray.push(""); // Leave a whiteline for readability
-          if (commando.hasOwnProperty("usage")) { // Push special message if command needs a suffix.
+        if (komennot[suffix]) {
+          var commando = komennot[suffix];
+          msgArray = [];
+          msgArray.push("**Komento:** `" + commando.name + "`");
+          msgArray.push("");
+          if (commando.hasOwnProperty("usage")) {
             msgArray.push("**Käyttö:** `" + KomentoEtuliite + commando.name + " " + commando.usage + "`");
           } else {
             msgArray.push("**Käyttö:** `" + KomentoEtuliite + commando.name + "`");
           }
-          msgArray.push("**Selitys:** " + commando.extendedhelp); // Push the extendedhelp to the array.
-          if (commando.hasOwnProperty("adminOnly")) { // Push special message if command is restricted.
+          msgArray.push("**Selitys:** " + commando.extendedhelp);
+          if (commando.hasOwnProperty("adminOnly")) {
             msgArray.push("**Vain ylläpidolle.**");
           }
-          if (commando.hasOwnProperty("timeout")) { // Push special message if command has a cooldown
+          if (commando.hasOwnProperty("timeout")) {
             msgArray.push("**Tätä komentoa voi ajaa " + commando.timeout + " sekunnin välein.**");
           }
-          bot.sendMessage(msg.author, msgArray); // Send the array to the user
+          client.sendMessage(msg.author, msgArray);
         } else {
-          bot.sendMessage(msg.channel, "Ei ole olemassa **" + suffix + "** komentoa!");
+          client.sendMessage(msg.channel, "Ei ole olemassa **" + suffix + "** komentoa!");
         }
       }
     } else if (cmd) {
       var cmdCheckSpec = canProcessCmd(cmd, cmdTxt, msg.author.id, msg);
       if (cmdCheckSpec.isAllow) {
-        cmd.process(bot, msg, suffix);
+        cmd.process(client, msg, suffix);
       }
     }
   }
@@ -117,24 +115,21 @@ function canProcessCmd(cmd, cmdText, userId, msg) {
       lastExecutedTime.setSeconds(lastExecutedTime.getSeconds() + cmd.timeout);
 
       if (currentDateTime < lastExecutedTime) {
-        // still on cooldown
         isAllowResult = false;
         //var diff = (lastExecutedTime-currentDateTime)/1000;
         //errorMessage = diff + " secs remaining";
-        bot.sendMessage(msg.channel, "Hey " + msg.sender + ", this command is on cooldown!");
+        client.sendMessage(msg.channel, "Hei " + msg.sender + ", tässä komennossa on aika rajoitus!");
       } else {
-        // update last executed date time
         cmdLastExecutedTime[cmdText] = new Date();
       }
     } else {
-      // first time executing, add to last executed time
       cmdLastExecutedTime[cmdText] = new Date();
     }
   }
 
   if (cmd.hasOwnProperty("adminOnly") && cmd.adminOnly && !isAdmin(userId)) {
     isAllowResult = false;
-    bot.sendMessage(msg.channel, "Hey " + msg.sender + ", you are not allowed to do that!");
+    client.sendMessage(msg.channel, "Hei! " + msg.sender + ", sinulla ei ole oikeuksia!");
   }
 
   return {
@@ -148,4 +143,4 @@ function isAdmin(id) {
 }
 
 
-bot.login(require("./conf/config.json").bot_id);
+client.login(require("./conf/config.json").client_id);
