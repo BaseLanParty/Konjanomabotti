@@ -1,0 +1,8 @@
+#Config file
+conf/config.json
+
+#libraryt
+node_modules
+
+#Tumeski custom settings for Atom
+.eslintrc.json
