@@ -25,3 +25,4 @@ Screen is optional command.
 ## Thanks to!
 - https://github.com/SteamingMutt/DougleyBot
 - https://github.com/hydrabolt/discord.js/
+- https://github.com/davidlimjh/TatsuBot

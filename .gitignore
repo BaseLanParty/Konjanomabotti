@@ -8,4 +8,5 @@ node_modules
 .eslintrc.json
 
 #Logit
-logs
+logs/console*
+logs/exceptions*
