@@ -1,8 +1,8 @@
 # Konjanomabotti
-This bot is made for usage on single server. It uses <a href="https://github.com/hydrabolt/discord.js/">discord.js</a>.
+This bot is made for usage on single server. It uses discord.js that runs on Node.js.
 
 ## Libraries used
-- Discord.js
+- <a href="https://github.com/hydrabolt/discord.js/">Discord.js</a>
 - winston & winston-daily-rotate-file
 
 ## Installation/usage
