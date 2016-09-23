@@ -13,6 +13,7 @@ Running this on Linux.
 npm install discord.js
 npm install winston
 npm install winston-daily-rotate-file
+npm install request
 
 screen node basebot.js
 ```

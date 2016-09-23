@@ -3,7 +3,7 @@
 
 //Olennaiset libraryt ladataan
 const Discord = require("discord.js");
-//var request = require("request");
+var request = require("request");
 var Logger = require("./include/logger.js").Logger;
 
 //Alustetaan client
@@ -15,7 +15,7 @@ var cmdLastExecutedTime = {};
 var yllapitaja_id = require("./conf/config.json").admin_ids;
 var pelien_nimet = require("./conf/peli_nimet.json");
 var cmdPrefix = "!";
-//const IMGUR_CLIENT_ID = require("./conf/config.json").IMGUR_CLIENT_ID;
+const IMGUR_CLIENT_ID = require("./conf/config.json").IMGUR_CLIENT_ID;
 
 
 var komennot = {
@@ -33,6 +33,37 @@ var komennot = {
       msg.channel.sendMessage("@here, " + msg.author + ": tulukee pellaamaan " + peli);
       msg.author.sendMessage("Äläkä spämmi tätä jatkuvaan. Kerta kyllä riittää!");
       Logger.log("info", "Kutsu pelaamaan " + peli + " kanavalla " + msg.channel + " author: "+ msg.author);
+    }
+  },
+  "image": {
+    name: "image",
+    description: "Get an image from Imgur",
+    usage: "<subreddit> [--nsfw] [--day | --week | --month | --year | --all]",
+    extendedhelp: "Available parameters are:\n\t`--nsfw` for getting NSFW images\n\t`--month` or other ranges for time ranges",
+    process: function(client, msg, suffix) {
+      if (!IMGUR_CLIENT_ID || IMGUR_CLIENT_ID == "") { msg.channel.sendMessage(msg, "⚠ No API key defined by bot owner", function(erro, wMessage) { msg.channel.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+      if (/[\uD000-\uF8FF]/g.test(suffix)) { msg.channel.sendMessage(msg, "Search cannot contain unicode characters.", (erro, wMessage) => { msg.channel.deleteMessage(wMessage, {"wait": 8000}); }); return; }
+      if (suffix && /^[^-].*/.test(suffix)) {
+        var time = (/(--day|--week|--month|--year|--all)/i.test(suffix)) ? /(--day|--week|--month|--year|--all)/i.exec(suffix)[0] : "--week";
+        var sendNSFW = (/ ?--nsfw/i.test(suffix)) ? true : false;
+        request({
+          url: "https://api.imgur.com/3/gallery/r/" + suffix.replace(/(--day|--week|--month|--year|--all|--nsfw|\/?r\/| )/gi, "") + "/top/" + time.substring(2) + "/50",
+          headers: {"Authorization": "Client-ID " + IMGUR_CLIENT_ID}
+        }, (error, response, body) => {
+          if (error) { Logger.log("error", error); msg.channel.sendMessage(msg, "Oh no! There was an error!"); }
+          else if (response.statusCode != 200) msg.channel.sendMessage(msg, "Got status code " + response.statusCode, (erro, wMessage) => { msg.channel.deleteMessage(wMessage, {"wait": 10000}); });
+          else if (body) {
+            body = JSON.parse(body);
+            if (body.hasOwnProperty("data") && body.data !== undefined && body.data.length !== 0) {
+              for (var i = 0; i < 100; i++) {
+                var toSend = body.data[Math.floor(Math.random() * (body.data.length))];
+                if (!sendNSFW && toSend.nsfw != true) { if (toSend.title) msg.channel.sendMessage(msg, "📷 " + toSend.link + " " + toSend.title); else  + " " + msg.channel.sendMessage(msg, toSend.link); break; }
+                else if (sendNSFW && toSend.nsfw == true) { if (toSend.title) msg.channel.sendMessage(msg, "📷 " + toSend.link + " **(NSFW)** " + toSend.title); else  + " " + msg.channel.sendMessage(msg, toSend.link + " **(NSFW)**"); break; }
+              }
+            } else msg.channel.sendMessage(msg, "Nothing found!", (erro, wMessage) => { client.deleteMessage(wMessage, {"wait": 10000}); });
+          }
+        });
+      }
     }
   },
   "uptime": {
