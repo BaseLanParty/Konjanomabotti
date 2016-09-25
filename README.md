@@ -12,14 +12,13 @@ Running this on Linux Debian (jessie) with all the libraries required.
 Remember to create your config.json file in conf folder from config.json.example file.
 
 ```
-npm install discord.js
-npm install winston
-npm install winston-daily-rotate-file
-npm install request
+npm install
+
 
 screen node basebot.js
 ```
-Screen is optional command.
+Screen keeps the application running when you aren't attached to the screen session.
+You can reattach with screen -DDR. Remember that this will log out any other existing screen sessions.
 
 ## Credits
 - Tumeski
