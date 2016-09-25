@@ -7,7 +7,9 @@ This bot is made for usage on single server. It uses discord.js that runs on Nod
 
 ## Installation/usage
 
-Running this on Linux.
+Running this on Linux Debian (jessie) with all the libraries required.
+
+Remember to create your config.json file in conf folder from config.json.example file.
 
 ```
 npm install discord.js

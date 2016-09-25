@@ -1,0 +1,27 @@
+{
+	"name": "Konjanomabotti",
+	"version": "0.1.0",
+	"description": "BaseLanParty private bot. Based on Discord.js",
+	"author": "Tumeski, Nnari",
+	"main": "basebot.js",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/BaseLanParty/Konjanomabotti"
+	},
+	"bugs": {
+		"url": "https://github.com/BaseLanParty/Konjanomabotti/issues"
+	},
+	"engines": {
+		"node": ">=6.0.0"
+	},
+	"scripts": {
+		"start": "node basebot.js"
+	},
+	"license": "Apache-2.0",
+	"dependencies": {
+		"discord.js": "hydrabolt/discord.js",
+		"winston": ">=2.2.0",
+    "winston-daily-rotate-file": "*",
+		"request": "*"
+	}
+}
