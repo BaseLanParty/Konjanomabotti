@@ -2,7 +2,7 @@
 	"name": "Konjanomabotti",
 	"version": "0.1.0",
 	"description": "BaseLanParty private bot. Based on Discord.js",
-	"author": "Tumeski, Nnari",
+	"author": "Tumeski, nnari",
 	"main": "basebot.js",
 	"repository": {
 		"type": "git",
@@ -19,7 +19,7 @@
 	},
 	"license": "Apache-2.0",
 	"dependencies": {
-		"discord.js": "hydrabolt/discord.js",
+		"discord.js": ">=9.3.0",
 		"winston": ">=2.2.0",
     "winston-daily-rotate-file": "*",
 		"request": "*"
