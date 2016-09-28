@@ -1,4 +1,5 @@
 # Konjanomabotti
+[![Build Status](https://travis-ci.org/BaseLanParty/Konjanomabotti.svg?branch=master)](https://travis-ci.org/BaseLanParty/Konjanomabotti)  
 This bot is made for usage on single server. It uses discord.js that runs on Node.js.
 
 ## Libraries used
