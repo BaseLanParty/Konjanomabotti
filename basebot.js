@@ -2,8 +2,6 @@
 //Konjanomabotti
 
 //Olennaiset libraryt ladataan
-
-
 try {
   //Discord ohjelma itsessään.
   var Discord = require("discord.js");
@@ -18,6 +16,12 @@ try {
   var request = require("request");
 } catch (e){
   console.log("request plugin ei ladattu!\n"+e.stack);
+}
+try{
+  // RSS syötteiden hankkimiseen
+  var DbConn = require("./include/mysql_database.js");
+} catch(e) {
+  console.log("mysql_database.js ei ladattu\n"+e.stack);
 }
 try {
   //Logitus muuallekkin kuin konsoliin.
@@ -34,9 +38,9 @@ try{
 
 //Alustetaan client
 const client = new Discord.Client();
-var startTime = Date.now();
 
 //Muuttujia yms..
+var startTime = Date.now();
 var cmdLastExecutedTime = {};
 var yllapitaja_id = require("./conf/config.json").admin_ids;
 var pelien_nimet = require("./conf/peli_nimet.json");
@@ -247,7 +251,7 @@ client.on("message", msg => {
         }
         msgArray.push("**Tehtävä:** `" + komento.description +  "`");
         if(komento.hasOwnProperty("extendedhelp")) {
-            msgArray.push("**Käytettävyys:** `" + komento.extendedhelp +  "`");
+          msgArray.push("**Käytettävyys:** `" + komento.extendedhelp +  "`");
         }
         if (komento.hasOwnProperty("timeout")) {
           msgArray.push("**Tätä komentoa voi ajaa " + komento.timeout + " sekunnin välein.**");

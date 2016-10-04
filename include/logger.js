@@ -1,12 +1,8 @@
 var Winston = require("winston");
 Winston.transports.DailyRotateFile = require("winston-daily-rotate-file");
-
 // Chat Logger
-
 Winston.emitErrs = true;
-
 // Command Error Logger
-
 exports.Logger = new Winston.Logger({
   colors: {
     verbose: "orange",

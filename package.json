@@ -1,7 +1,7 @@
 {
   "name": "Konjanomabotti",
-  "version": "0.1.0",
-  "description": "BaseLanParty private bot. Based on Discord.js",
+  "version": "0.1.1",
+  "description": "BaseLanParty Discord bot. Based on Discord.js",
   "author": "Tumeski, nnari",
   "main": "basebot.js",
   "repository": {
@@ -24,6 +24,7 @@
     "winston": ">=2.2.0",
     "winston-daily-rotate-file": "*",
     "youtube-api": "^2.0.2",
-    "feedparser": "*"
+    "feedparser": ">=1.1.5",
+    "mysql": ">=2.11.1"
   }
 }

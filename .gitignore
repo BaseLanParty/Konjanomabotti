@@ -1,5 +1,6 @@
 #Config file
 conf/config.json
+conf/mysql_settings.json
 
 #libraryt
 node_modules
