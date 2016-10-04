@@ -23,6 +23,7 @@
     "request": "*",
     "winston": ">=2.2.0",
     "winston-daily-rotate-file": "*",
-    "youtube-api": "^2.0.2"
+    "youtube-api": "^2.0.2",
+    "feedparser": "*"
   }
 }

@@ -1,10 +1,9 @@
 # Konjanomabotti
 [![Build Status](https://travis-ci.org/BaseLanParty/Konjanomabotti.svg?branch=master)](https://travis-ci.org/BaseLanParty/Konjanomabotti)  
-This bot is made for usage on single server. It uses discord.js that runs on Node.js.
+This bot is made for BaseLanParty personal usage on our Discord server. It uses discord.js that runs on Node.js.
 
 ## Libraries used
-- <a href="https://github.com/hydrabolt/discord.js/">Discord.js</a>
-- winston & winston-daily-rotate-file
+Check package.json for needed libraries.
 
 ## Installation/usage
 
@@ -23,7 +22,7 @@ You can reattach with screen -DDR. Remember that this will log out any other exi
 
 ## Credits
 - Tumeski
-- Häkä
+- nnari
 
 ## Thanks to!
 - https://github.com/SteamingMutt/DougleyBot

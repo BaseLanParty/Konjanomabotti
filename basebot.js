@@ -2,9 +2,35 @@
 //Konjanomabotti
 
 //Olennaiset libraryt ladataan
-const Discord = require("discord.js");
-var request = require("request");
-var Logger = require("./include/logger.js").Logger;
+
+
+try {
+  //Discord ohjelma itsessään.
+  var Discord = require("discord.js");
+} catch (e){
+  console.log(e.stack);
+  console.log(process.version);
+  console.log("Aja 'npm install' esin!");
+  process.exit();
+}
+try {
+  //Requestia käytetään urlien selvittämiseen
+  var request = require("request");
+} catch (e){
+  console.log("request plugin ei ladattu!\n"+e.stack);
+}
+try {
+  //Logitus muuallekkin kuin konsoliin.
+  var Logger = require("./include/logger.js").Logger;
+} catch (e){
+  console.log("logger.js ei ladattu!\n"+e.stack);
+}
+try{
+  // RSS syötteiden hankkimiseen
+  var rssFeeds = require("./include/rss.json");
+} catch(e) {
+  console.log("rss.json ei ladattu\n"+e.stack);
+}
 
 //Alustetaan client
 const client = new Discord.Client();
@@ -15,8 +41,7 @@ var cmdLastExecutedTime = {};
 var yllapitaja_id = require("./conf/config.json").admin_ids;
 var pelien_nimet = require("./conf/peli_nimet.json");
 var cmdPrefix = "!";
-const IMGUR_CLIENT_ID = require("./conf/config.json").IMGUR_CLIENT_ID;
-
+//const IMGUR_CLIENT_ID = require("./conf/config.json").IMGUR_CLIENT_ID;
 
 var komennot = {
   //Käyttäjien komentoja
@@ -35,40 +60,79 @@ var komennot = {
       Logger.log("info", "Kutsu pelaamaan " + peli + " kanavalla " + msg.channel + " author: "+ msg.author);
     }
   },
-  "image": {
-    name: "image",
-    description: "Get an image from Imgur",
-    usage: "<subreddit> [--nsfw] [--day | --week | --month | --year | --all]",
-    extendedhelp: "Available parameters are:\n\t`--nsfw` for getting NSFW images\n\t`--month` or other ranges for time ranges",
-    process: function(client, msg, suffix) {
-      if (!IMGUR_CLIENT_ID || IMGUR_CLIENT_ID == "") { msg.channel.sendMessage(msg, "⚠ No API key defined by bot owner", function(erro, wMessage) { msg.channel.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-      if (/[\uD000-\uF8FF]/g.test(suffix)) { msg.channel.sendMessage(msg, "Search cannot contain unicode characters.", (erro, wMessage) => { msg.channel.deleteMessage(wMessage, {"wait": 8000}); }); return; }
-      if (suffix && /^[^-].*/.test(suffix)) {
-        var time = (/(--day|--week|--month|--year|--all)/i.test(suffix)) ? /(--day|--week|--month|--year|--all)/i.exec(suffix)[0] : "--week";
-        var sendNSFW = (/ ?--nsfw/i.test(suffix)) ? true : false;
-        request({
-          url: "https://api.imgur.com/3/gallery/r/" + suffix.replace(/(--day|--week|--month|--year|--all|--nsfw|\/?r\/| )/gi, "") + "/top/" + time.substring(2) + "/50",
-          headers: {"Authorization": "Client-ID " + IMGUR_CLIENT_ID}
-        }, (error, response, body) => {
-          if (error) { Logger.log("error", error); msg.channel.sendMessage(msg, "Oh no! There was an error!"); }
-          else if (response.statusCode != 200) msg.channel.sendMessage(msg, "Got status code " + response.statusCode, (erro, wMessage) => { msg.channel.deleteMessage(wMessage, {"wait": 10000}); });
-          else if (body) {
-            body = JSON.parse(body);
-            if (body.hasOwnProperty("data") && body.data !== undefined && body.data.length !== 0) {
-              for (var i = 0; i < 100; i++) {
-                var toSend = body.data[Math.floor(Math.random() * (body.data.length))];
-                if (!sendNSFW && toSend.nsfw != true) { if (toSend.title) msg.channel.sendMessage(msg, "📷 " + toSend.link + " " + toSend.title); else  + " " + msg.channel.sendMessage(msg, toSend.link); break; }
-                else if (sendNSFW && toSend.nsfw == true) { if (toSend.title) msg.channel.sendMessage(msg, "📷 " + toSend.link + " **(NSFW)** " + toSend.title); else  + " " + msg.channel.sendMessage(msg, toSend.link + " **(NSFW)**"); break; }
+  "reddit": {
+    name: "reddit",
+    usage: "[subreddit]|[maara]|[kategoria:top/new/rising...]",
+    extendedhelp: "",
+    description: "Redditistä threadejä. Voit määrittää määränkin, max 5.",
+    process: function(client,msg,suffix) {
+      var count = 1;
+      var full = false;
+      var kategoria = "top";
+      if(suffix){
+        var subreddit = "/r/" + suffix.split("|")[0];
+        var _count = suffix.split("|")[1];
+        var _kategoria = suffix.split("|")[2];
+        if(_count) {
+          count = _count;
+        }
+        if(_kategoria) {
+          kategoria = _kategoria;
+        }
+        if(count > 6 && isNumeric(count)) {
+          msg.channel.sendMessage("Haen max 5 reddit postia kerrallaan.");
+        } else {
+          rssfeed(client,msg,"https://www.reddit.com"+subreddit+"/"+kategoria+"/.rss",count,full);
+        }
+      } else {
+        msg.channel.sendMessage("Syötä nyt joku subreddit?");
+      }
+    }
+  },
+  "rss": {
+    name: "rss",
+    usage: "[feedin nimi]|[maara]",
+    extendedhelp: "",
+    description: "Rss feedien lukemiseen. Ennalta syötetyt feedit pelkästään.",
+    process: function(client,msg,suffix) {
+      var full = true;
+      if(suffix) {
+        var feedname = suffix.split("|")[0];
+        var count = suffix.split("|")[1];
+        if(count > 5 && isNumeric(count)) {
+          msg.channel.sendMessage("Haen vain 5 tai vähemmän feediä kerrallaan.");
+        } else {
+          msg.channel.sendMessage("RSS Feedi '"+ feedname +"': ").then(function(){
+            for(var c in rssFeeds) {
+              if(c == feedname) {
+                rssfeed(client,msg,rssFeeds[c].url,count,full);
               }
-            } else msg.channel.sendMessage(msg, "Nothing found!", (erro, wMessage) => { client.deleteMessage(wMessage, {"wait": 10000}); });
+            }
+          });
+        }
+      } else {
+        msg.channel.sendMessage("Tarjolla: ").then(function(){
+          for(var c in rssFeeds) {
+            msg.channel.sendMessage(c + ": " + rssFeeds[c].url);
           }
         });
       }
     }
   },
-  "uptime": {
+  "discordID": {
+    name: "discordID",
     usage: "",
-    description: "returns the amount of time since the bot started",
+    extendedhelp: "",
+    description: "Palauttaa sinun Discord ID:si. Ylläpitäjä/Devi voi kysyä sinulta tätä.",
+    process: function(client,msg) {
+      msg.author.sendMessage("Sinun ID: " + msg.author.id);
+    }
+  },
+  "uptime": {
+    name: "uptime",
+    usage: "",
+    extendedhelp: "",
+    description: "Kauanko botti ollut tulilla!",
     process: function(client, msg) {
       var now = Date.now();
       var msec = now - startTime;
@@ -115,8 +179,9 @@ var komennot = {
 
 //Aloitetaan alustamaan botin toimintoja
 client.on("ready", function() {
+  //loadFeeds();
   client.user.setStatus("online", "muh dikko");
-  Logger.log("info", "Lipas! Sain " + client.channels.length + " kanavaa");
+  Logger.log("info", "Käynnissä!");
 });
 
 //Pää "looppi", jossa käsitellään tulevat viestit
@@ -131,7 +196,6 @@ client.on("message", msg => {
   var suffix = msg.content.substring(cmdTxt.length + 2);
 
   //Käsitellään normaalit komennot
-
   var cmd = komennot[cmdTxt];
   if (cmdTxt === "komennot" || cmdTxt === "apua") {
     var msgArray = [];
@@ -181,10 +245,10 @@ client.on("message", msg => {
         } else {
           msgArray.push("**Käyttö:** `" + cmdPrefix + komento.name + "`");
         }
-        msgArray.push("**Tehtävä**" + komento.description);
-        msgArray.push("**Käytettävyys:** " + komento.extendedhelp);
-
-
+        msgArray.push("**Tehtävä:** `" + komento.description +  "`");
+        if(komento.hasOwnProperty("extendedhelp")) {
+            msgArray.push("**Käytettävyys:** `" + komento.extendedhelp +  "`");
+        }
         if (komento.hasOwnProperty("timeout")) {
           msgArray.push("**Tätä komentoa voi ajaa " + komento.timeout + " sekunnin välein.**");
         }
@@ -193,9 +257,8 @@ client.on("message", msg => {
           msg.author.sendMessage(msgArray);
           msg.channel.sendMessage("Ylläpitäjät saavat vastaukset privaattina :heart: :thinking:");
         } else {
-          msg.channel.sendMessage("msgArray");
+          msg.channel.sendMessage(msgArray);
         }
-
       } else {
         msg.channel.sendMessage("Komentoa **" + suffix + "** ei ole olemassa!");
       }
@@ -212,14 +275,12 @@ client.on("message", msg => {
 function canProcessCmd(cmd, cmdText, userId, msg) {
   var isAllowResult = true;
   var errorMessage = "";
-
   if (cmd.hasOwnProperty("timeout")) {
     // check for timeout
     if (cmdLastExecutedTime.hasOwnProperty(cmdText)) {
       var currentDateTime = new Date();
       var lastExecutedTime = new Date(cmdLastExecutedTime[cmdText]);
       lastExecutedTime.setSeconds(lastExecutedTime.getSeconds() + cmd.timeout);
-
       if (currentDateTime < lastExecutedTime) {
         isAllowResult = false;
         //var diff = (lastExecutedTime-currentDateTime)/1000;
@@ -232,12 +293,10 @@ function canProcessCmd(cmd, cmdText, userId, msg) {
       cmdLastExecutedTime[cmdText] = new Date();
     }
   }
-
   if (cmd.hasOwnProperty("adminOnly") && cmd.adminOnly && !isAdmin(userId)) {
     isAllowResult = false;
     msg.channel.sendMessage("Hei! " + msg.author + ", sinulla ei ole oikeuksia!");
   }
-
   return {
     isAllow: isAllowResult,
     errMsg: errorMessage
@@ -246,6 +305,40 @@ function canProcessCmd(cmd, cmdText, userId, msg) {
 
 function isAdmin(id) {
   return (yllapitaja_id.indexOf(id) > -1);
+}
+
+function rssfeed(client,msg,url,count,full){
+  var FeedParser = require('feedparser');
+  var feedparser = new FeedParser();
+  var request = require('request');
+  request(url).pipe(feedparser);
+  feedparser.on('error', function(error){
+    msg.channel.sendMessage("failed reading feed: " + error);
+  });
+  var shown = 0;
+  feedparser.on('readable',function() {
+    var stream = this;
+    shown += 1
+    if(shown > count){
+      return;
+    }
+    var item = stream.read();
+    msg.channel.sendMessage(item.title + " - " + item.link, function() {
+      if(full === true){
+        var text = htmlToText.fromString(item.description,{
+          wordwrap:false,
+          ignoreHref:true
+        });
+        msg.channel.sendMessage(text);
+      }
+    });
+    stream.alreadyRead = true;
+  });
+}
+
+//....
+function isNumeric(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
 }
 
 //Kirjaudu sisään
