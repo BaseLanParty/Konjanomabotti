@@ -9,7 +9,7 @@ Check package.json for needed libraries.
 
 Running this on Linux Debian (jessie) with all the libraries required.
 
-Remember to create your config.json file in conf folder from config.json.example file.
+Remember to create your `config.json` file in `/conf` folder from `config.json.example` file.
 
 ```
 npm install
