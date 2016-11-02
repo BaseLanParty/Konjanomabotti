@@ -97,7 +97,7 @@ var komennot = {
     name: "rss",
     usage: "[feedin nimi]|[maara]",
     extendedhelp: "",
-    description: "Rss feedien lukemiseen. Ennalta syötetyt feedit pelkästään.",
+    description: "RSS-feedien lukemiseen. Ennalta syötetyt feedit pelkästään.",
     process: function(client,msg,suffix) {
       var full = true;
       if(suffix) {
@@ -257,7 +257,7 @@ client.on("message", msg => {
           msgArray.push("**Tätä komentoa voi ajaa " + komento.timeout + " sekunnin välein.**");
         }
         if(komento.hasOwnProperty("adminOnly")) {
-          msgArray.push("**Ylläpito komento!**");
+          msgArray.push("**Ylläpitokomento!**");
           msg.author.sendMessage(msgArray);
           msg.channel.sendMessage("Ylläpitäjät saavat vastaukset privaattina :heart: :thinking:");
         } else {
@@ -289,7 +289,7 @@ function canProcessCmd(cmd, cmdText, userId, msg) {
         isAllowResult = false;
         //var diff = (lastExecutedTime-currentDateTime)/1000;
         //errorMessage = diff + " secs remaining";
-        msg.channel.sendMessage("Hei " + msg.author + ", tässä komennossa on aika rajoitus!");
+        msg.channel.sendMessage("Hei " + msg.author + ", tämä komento on aikarajoitettu!");
       } else {
         cmdLastExecutedTime[cmdText] = new Date();
       }
